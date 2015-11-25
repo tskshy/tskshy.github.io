@@ -8,6 +8,9 @@
 	<link href="css/styles.css" rel="stylesheet">
 	<link href="css/animation.css" rel="stylesheet">
 
+	<script src="js/libs/2.1.1/jquery.js"></script>
+	<script src="js/app/index.js"></script>
+
 	<title>个人博客</title>
 </head>
 <body>
@@ -41,74 +44,7 @@
 	<div class="blank"></div>
 	
 	<div class="blogs">
-		<ul class="bloglist">
-			<!--Add here: 20151124-2 start-->
-			<li>
-				<div class="arrow_box">
-					<div class="ti"></div>
-					<div class="ci"></div>
-					<h2 class="title">
-						<a href="2015-11-24.html" target="_blank">GITHUB 403 error</a>
-					</h2>
-					<ul class="textinfo">
-						<a href="2015-11-24.html" target="_blank">
-							<img src="img/201511241952.jpg">
-						</a>
-						<p>
-						创建博客的时候遇到的小问题 随手纪录一下
-						</p>
-					</ul>
-					<ul class="details">
-						<li><a href="javascript:void(0);">2015-11-24</a></li>
-					</ul>
-				</div>
-			</li>	
-			<!--Add here: 20151124-2 end-->
-			<!--Add here: 20151124 start-->
-			<li>
-				<div class="arrow_box">
-					<div class="ti"></div>
-					<div class="ci"></div>
-					<h2 class="title">
-						<a href="javascript:void(0);">一个人的四季</a>
-					</h2>
-					<ul class="textinfo">
-						<a href="javascript:void(0);">
-							<img src="img/20151124.jpg">
-						</a>
-						<p>
-						我希望在我的人生中有一段这样的岁月，吃饱穿暖，不劳作也不忧虑；读喜欢的书，看没看过的电影，画画，听音乐；黄昏的时候可以牵手散步，路边的树上忽然落下一片叶子或一朵花；即使夜晚你就睡在我的旁边，我仍想提笔给你写长长的信，那些字最后从纸上飞起来，成了遥远的山谷中经久不息的回声。
-						</p>
-					</ul>
-					<ul class="details">
-						<li><a href="javascript:void(0);">2015-11-24</a></li>
-					</ul>
-				</div>
-			</li>	
-			<!--Add here: 20151124 end-->
-			<!--Add here: 20151124-1 start-->
-			<li>
-				<div class="arrow_box">
-					<div class="ti"></div>
-					<div class="ci"></div>
-					<h2 class="title">
-						<a href="javascript:void(0);">GITHUB个人静态博客创建</a>
-					</h2>
-					<ul class="textinfo">
-						<a href="javascript:void(0);">
-							<img src="img/2015112419.jpg">
-						</a>
-						<p>
-						从今以后，开始纪录自己生活的点点滴滴... 人生，翻开了新的一页。
-						</p>
-					</ul>
-					<ul class="details">
-						<li><a href="javascript:void(0);">2015-11-24</a></li>
-					</ul>
-				</div>
-			</li>	
-			<!--Add here: 20151124-1 end-->
-	
+		<ul class="bloglist" id="bloglst">
 		</ul>
 	
 		<aside>
@@ -136,29 +72,28 @@
 	
 </div>
 
+<!-- disqus setting -->
 <div style="width: 1024px; margin:0px auto">
-
-<div id="disqus_thread"></div>
-<script>
-/**
-* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-*/
-/*
-var disqus_config = function () {
-this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
-this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-};
-*/
-(function() { // DON'T EDIT BELOW THIS LINE
-var d = document, s = d.createElement('script');
-s.src = 'http://httptskshygithubio.disqus.com/embed.js';
-s.setAttribute('data-timestamp', +new Date());
-(d.head || d.body).appendChild(s);
-})();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-
+	<div id="disqus_thread"></div>
+	<script>
+		/**
+		* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+		* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+		*/
+		/*
+		var disqus_config = function () {
+		this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+		this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+		};
+		*/
+		(function() { // DON'T EDIT BELOW THIS LINE
+		var d = document, s = d.createElement('script');
+		s.src = 'http://httptskshygithubio.disqus.com/embed.js';
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+		})();
+		</script>
+	<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 </div>
 <footer>
 	<div class="footer-bottom">
