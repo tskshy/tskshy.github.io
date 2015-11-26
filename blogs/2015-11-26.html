@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2015-11-26</title>
+<link rel="stylesheet" href="../css/night.css" />
+
+</head>
+<body><div class="container"><h1 id="spray-server-upload-multiple-file-with-parameters">spray server: upload multiple file with parameters</h1>
+
+<p>在写一个接口时 需要上传参数以及不定的附件 这里做一下记录 <br>
+下面只是一个当时的测试demo</p>
+
+<p>服务端代码</p>
+
+<pre class="prettyprint"><code class="language-scala hljs ">formField(<span class="hljs-string">'name.as[String]) { (name) =&gt;
+    println("&gt;&gt;&gt; " + name)
+    entity(as[MultipartFormData]) { attach =&gt;
+        attach.fields.map { e =&gt;
+            println("&gt;&gt;: " + e.filename)
+            println("&gt;&gt;: " + e.name)
+            if (e.filename != None) {
+                val fos: FileOutputStream = new FileOutputStream(e.filename.get)
+                try {
+                    fos.write(e.entity.data.toByteArray)
+                } finally {
+                    fos.close()
+                }
+            }
+        }
+        complete {
+            "upload ok"
+        }
+    }
+}</span></code></pre>
+
+<p>测试shell</p>
+
+
+
+<pre class="prettyprint"><code class="language-shell hljs lasso">curl <span class="hljs-subst">--</span>request POST <span class="hljs-attribute">-H</span> <span class="hljs-string">"Content-Type: multipart/form-data"</span> <span class="hljs-attribute">-F</span> <span class="hljs-string">"att=@yourfile"</span> <span class="hljs-attribute">-F</span> <span class="hljs-string">"att1=@yourfile"</span> <span class="hljs-attribute">-F</span> <span class="hljs-string">"param1=111"</span> http:<span class="hljs-comment">//127.0.0.1:4242/upload</span></code></pre></div>
+
+
+
+
+<div id="disqus_thread"></div>
+<script>
+/**
+* RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+* LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+*/
+/*
+var disqus_config = function () {
+this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+};
+*/
+(function() { // DON'T EDIT BELOW THIS LINE
+var d = document, s = d.createElement('script');
+
+s.src = 'http://httptskshygithubio.disqus.com/embed.js';
+
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+</body>
+</html>
