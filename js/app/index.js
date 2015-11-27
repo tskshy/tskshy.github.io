@@ -47,7 +47,7 @@ function load_blog_lst (index) {
 
 				if (element.url != "") {
 					a_title = '<a href="' + url_prefix + element.url + '" target="_blank">' + element.title + '</a>';
-					a_textinfo = '<a href="' + url_prefix + element.url + '"><img src="' + img_prefix + element.img + '"></a>';
+					a_textinfo = '<a href="' + url_prefix + element.url + '" target="_blank"><img src="' + img_prefix + element.img + '"></a>';
 				} else {
 					a_title = '<a href="javascript:void(0);">' + element.title + '</a>';
 					a_textinfo = '<a href="javascript:void(0);"><img src="' + img_prefix + element.img + '"></a>';
