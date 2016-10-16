@@ -2,34 +2,9 @@ $(document).ready(function () {
 	init();	
 });
 
-var _g_k = {
-	conf: {},
-	page_num: 1
-};
 
 function init () {
-	load_conf_json();
-}
-
-function load_conf_json () {
-	var url = "json/bloglist/conf.json";
-	$.ajax({
-		type: "GET",
-		url: url,
-		dataType: "json",
-		success: function (json) {
-			_g_k.conf = json;
-			for (var i = 1; i <= _g_k.page_num; i++) {
-				/*
-				 * 加载预定义数据
-				 */
-				load_blog_lst(i);
-			}
-		},
-		error: function () {
-			alert("load configure file error");
-		}
-	});
+	load_blog_lst(1);
 }
 
 function load_blog_lst (index) {
@@ -39,8 +14,8 @@ function load_blog_lst (index) {
 		url: url,
 		dataType: "json",
 		success: function (json) {
-			var img_prefix	= _g_k.conf.img_prefix;
-			var url_prefix	= _g_k.conf.url_prefix;
+			var img_prefix	= json.conf.img_prefix;
+			var url_prefix	= json.conf.url_prefix;
 			var blog_lst	= json.data;
 			/*
 			<ul id="bloglst">
