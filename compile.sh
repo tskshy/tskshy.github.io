@@ -15,6 +15,6 @@ pandoc $MD_FILE\
 	-s \
 	--mathml \
 	--highlight-style pygments \
-	--css ${ROOT_DIR}/css/pandoc.css \
+	--css ../css/pandoc.css \
 	--toc \
        	-o $HTML_FILE
