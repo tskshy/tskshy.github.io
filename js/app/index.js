@@ -46,6 +46,10 @@ function load_blog_lst (index) {
 				var a_title = '';
 				var a_textinfo = '';
 
+				if (element.img == "") {
+					element.img = "../git-default.png";
+				}
+
 				if (element.url != "") {
 					a_title = '<a href="' + url_prefix + element.url + '" target="_blank">' + element.title + '</a>';
 					a_textinfo = '<a href="' + url_prefix + element.url + '" target="_blank"><img src="' + img_prefix + element.img + '"></a>';
@@ -70,6 +74,11 @@ function load_blog_lst (index) {
 					+ '		</ul>                                                                    '
 					+ '		<ul class="details">                                                     '
 					+ '			<li><a href="javascript:void(0);">' + element.time + '</a></li>  '
+					+ '			<li>                                                             '
+					+ '				<a href="javascript:void(0);">                           '
+					+ '					ARTICLE ID( ' + element.id + ' )                 '
+					+ '				</a>                                                     '
+					+ '			</li>                                                            '
 					+ '		</ul>                                                                    '
 					+ '	</div>                                                                           '
 					+ '</li>                                                                                 '
