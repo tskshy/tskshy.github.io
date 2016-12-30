@@ -11,6 +11,7 @@ if [ ! -f "$MD_FILE" ]; then
 	exit 0
 fi
 
+#提交github后，css需要给出相对路径
 pandoc $MD_FILE\
 	-s \
 	--mathml \
