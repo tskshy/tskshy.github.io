@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="../css/pandoc.css" type="text/css" />
+</head>
+<body>
+<div id="TOC">
+<ul>
+<li><a href="#使用sshfs实现">使用sshfs实现</a></li>
+</ul>
+</div>
+<h1 id="使用sshfs实现">使用sshfs实现</h1>
+<ul>
+<li>挂载命令</li>
+</ul>
+<pre class="shell"><code>sshfs username@host:/path /localdir</code></pre>
+<ul>
+<li>卸载命令</li>
+</ul>
+<pre class="shell"><code>fusermount -u localdir</code></pre>
+<p><strong>其他详细相关信息自行google</strong></p>
+</body>
+</html>
