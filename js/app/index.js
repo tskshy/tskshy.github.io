@@ -47,7 +47,7 @@ function load_blog_lst (index) {
 				var a_textinfo = '';
 
 				if (element.img == "") {
-					element.img = "../git-default.png";
+					element.img = "../git-default-1.jpg";
 				}
 
 				if (element.url != "") {
