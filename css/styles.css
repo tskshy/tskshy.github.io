@@ -56,10 +56,10 @@ header nav ul li a:hover, #nav_current { color: #fff; background: rgba(20, 20, 2
 .arrow_box img:hover { opacity: 0.6; }
 .arrow_box p { line-height: 24px; padding: 0 20px 20px }
 .arrow_box p:hover { text-shadow: 1px 1px 1px #000; }
-.details { background: rgba(1,1,1,0.3); border-radius: 0 0 6px 6px; padding: 0 10px }
+.details { background: rgba(237,247,248,0.3); border-radius: 0 0 6px 6px; padding: 0 10px }
 .details li { line-height: 26px; display: inline; font-size: 11px; margin-right: 10px; }
-.details li a { color: #28E437 }
-.details li a:hover { color: #933 }
+.details li a { color: #62c5c5 }
+.details li a:hover { color: white }
 .icon-time, .likes, .comments { background: url(../img/icons.png) no-repeat }
 .icon-time { background-position: 0 -208px; padding: 0 0 0 18px; }
 .likes, .comments { float: right; padding: 0 0 0 14px; }
