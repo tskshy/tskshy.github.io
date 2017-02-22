@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="../css/pandoc.css" type="text/css" />
+</head>
+<body>
+<h4 id="go-interface">go interface</h4>
+<p>go version go1.7.4 linux/amd64</p>
+<p>Go语言提供了一种数据类型，里面定义了一组未实现的方法，其他任何类型，只要实现了所有这些方法就是实现了这个接口。</p>
+<h4 id="接口和方法用法定义">接口和方法用法定义</h4>
+<div class="sourceCode"><pre class="sourceCode go"><code class="sourceCode go"><span class="co">/*定义接口*/</span>
+<span class="kw">type</span> &lt;interface_name&gt; <span class="kw">interface</span> {
+    &lt;method_name0&gt;(&lt;parameters_type&gt;) [return_type]
+    &lt;method_name1&gt;(&lt;parameters_type&gt;) [return_type]
+    &lt;method_name2&gt;(&lt;parameters_type&gt;) [return_type]
+    ...
+    &lt;method_namen&gt;(&lt;parameters_type&gt;) [return_type]
+}
+
+<span class="co">/*定义结构体*/</span>
+<span class="kw">type</span> &lt;struct_name&gt; <span class="kw">struct</span> {
+    <span class="co">/*variables*/</span>
+}
+
+<span class="co">/*实现接口方法*/</span>
+<span class="kw">func</span> (&lt;struct_name_param&gt; &lt;struct_name&gt;) &lt;method_name&gt;(&lt;parameters&gt;) [return_type] {
+    <span class="co">/*单个方法实现，需要实现接口中所有的方法*/</span>
+}</code></pre></div>
+<h4 id="接口和方法用例">接口和方法用例</h4>
+<div class="sourceCode"><pre class="sourceCode go"><code class="sourceCode go"><span class="kw">package</span> main
+
+<span class="kw">import</span> (
+    <span class="st">&quot;fmt&quot;</span>
+)
+
+<span class="kw">type</span> Phone <span class="kw">interface</span> {
+    price () <span class="dt">int</span>
+    version (<span class="dt">string</span>) <span class="dt">string</span>
+    call ()
+}
+
+<span class="kw">type</span> IPhone <span class="kw">struct</span> {
+    name <span class="dt">string</span>
+    _price <span class="dt">int</span>
+}
+
+<span class="kw">func</span> (iphone IPhone) price () <span class="dt">int</span> {
+    <span class="kw">return</span> iphone._price
+}
+
+<span class="kw">func</span> (iphone IPhone) version (s <span class="dt">string</span>) <span class="dt">string</span> {
+    <span class="kw">return</span> iphone.name + <span class="st">&quot;-&quot;</span> + s
+}
+
+<span class="kw">func</span> (iphone IPhone) call () {
+    fmt.Println(<span class="st">&quot;du du du ...&quot;</span>)
+}
+
+<span class="kw">func</span> main () {
+    <span class="kw">var</span> phone Phone
+    phone = IPhone{name:<span class="st">&quot;iphone 6s&quot;</span>, _price:<span class="dv">6000</span>}
+
+    fmt.Println(phone.price())
+    fmt.Println(phone.version(<span class="st">&quot;0.01&quot;</span>))
+    phone.call()
+}</code></pre></div>
+<h4 id="go-function">go function</h4>
+<p>go语言至少有一个main函数</p>
+<h4 id="函数定义">函数定义</h4>
+<div class="sourceCode"><pre class="sourceCode go"><code class="sourceCode go"><span class="co">/*中括号里为可选，没有函数名称时为匿名函数*/</span>
+<span class="kw">func</span> [function_name] ([param list]) [return_types] {
+    <span class="co">/*函数体*/</span>
+}</code></pre></div>
+<h4 id="函数用例">函数用例</h4>
+<div class="sourceCode"><pre class="sourceCode go"><code class="sourceCode go"><span class="co">/*变加法器*/</span>
+<span class="kw">func</span> add_n (n <span class="dt">int</span>) <span class="kw">func</span> (<span class="dt">int</span>) <span class="dt">int</span> {
+    <span class="kw">return</span> <span class="kw">func</span> (m <span class="dt">int</span>) <span class="dt">int</span> {
+        <span class="kw">return</span> n + m
+    }
+}
+
+<span class="kw">func</span> main () {
+    <span class="kw">var</span> add2 <span class="kw">func</span> (<span class="dt">int</span>) <span class="dt">int</span> = add_n(<span class="dv">2</span>)
+    fmt.Println(add2(<span class="dv">1</span>))
+
+    add3 := add_n(<span class="dv">3</span>)
+    fmt.Println(add3(<span class="dv">1</span>))
+}</code></pre></div>
+</body>
+</html>

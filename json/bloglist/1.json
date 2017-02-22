@@ -3,10 +3,10 @@
 	[		
 		{
 			"id"	: "13",
-			"title"	: "golang interface",
+			"title"	: "golang function/method/interface",
 			"url"	: "2017-02-22.md.html",
 			"img"	: "",
-			"intro"	: "go语言interface介绍",
+			"intro"	: "go语言函数，方法，接口简单介绍，备忘",
 			"time"	: "2017-02-22"
 		},
 		{

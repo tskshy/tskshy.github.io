@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+#e.g. ./compile.sh 2012-12-12.md
+
 FILE_NAME=$1
 ROOT_DIR="/root/devel/blogs/tskshy.github.io"
 
@@ -19,3 +21,4 @@ pandoc $MD_FILE\
 	--css ../css/pandoc.css \
 	--toc \
        	-o $HTML_FILE
+
