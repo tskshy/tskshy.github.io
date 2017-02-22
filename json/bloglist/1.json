@@ -2,6 +2,14 @@
 	"data"	: 
 	[		
 		{
+			"id"	: "13",
+			"title"	: "golang interface",
+			"url"	: "2017-02-22.md.html",
+			"img"	: "",
+			"intro"	: "go语言interface介绍",
+			"time"	: "2017-02-22"
+		},
+		{
 			"id"	: "12",
 			"title"	: "python - with xxx as xxxx 语法了解",
 			"url"	: "2017-01-05.md.html",
