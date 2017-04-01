@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="../css/pandoc.css" type="text/css" />
+</head>
+<body>
+<div id="TOC">
+<ul>
+<li><a href="#elasticsearch-手册-get-started">elasticsearch 手册 ( get started )</a></li>
+<li><a href="#基本操作">基本操作</a></li>
+<li><a href="#查询简介">查询简介</a></li>
+</ul>
+</div>
+<h3 id="elasticsearch-手册-get-started">elasticsearch 手册 ( get started )</h3>
+<ul>
+<li>/etc/hosts: 172.16.2.59 localhost</li>
+<li>es不是严格的rest api， 为了清晰统一，最好遵循rest风格</li>
+<li>简单来说：</li>
+<li>GET -- READ</li>
+<li>POST -- MODIFY</li>
+<li>PUT -- CREATE</li>
+<li>DELETE -- DELETE</li>
+</ul>
+<h3 id="基本操作">基本操作</h3>
+<ul>
+<li><p>查询所有索引信息</p>
+<pre class="shell"><code>curl -XGET &#39;localhost:9200/_cat/indices?v&amp;pretty=true&#39;</code></pre></li>
+<li><p>创建index: test</p>
+<pre class="shell"><code>curl -XPUT &#39;localhost:9200/test?pretty&#39;</code></pre></li>
+<li><p>创建doc_type和id(多次调用会覆盖之前的信息)</p>
+<pre class="shell"><code>curl -XPUT &#39;localhost:9200/test/doc/1?pretty&#39; -d&#39;{&quot;name&quot;: &quot;abc1&quot;}&#39;
+curl -XPUT &#39;localhost:9200/test/doc/2?pretty&#39; -d&#39;{&quot;name&quot;: &quot;abc2&quot;}&#39;</code></pre></li>
+<li><p>同理，可以更新对应信息</p>
+<pre class="shell"><code>curl -XPOST &#39;localhost:9200/test/doc/1/_update?pretty&#39; -d&#39;{&quot;doc&quot;: {&quot;name&quot;: &quot;abc111&quot;}}&#39;</code></pre></li>
+<li><p>根据doc_type查询所有id信息</p>
+<pre class="shell"><code>curl -XGET &#39;localhost:9200/test/doc/_search?pretty&#39;</code></pre></li>
+<li><p>根据id查询id对应信息</p>
+<pre class="shell"><code>curl -XGET &#39;localhost:9200/test/doc/1?pretty&#39;</code></pre></li>
+<li><p>根据id删除id对应信息</p>
+<pre class="shell"><code>curl -XDELETE &#39;localhost:9200/test/doc/2?pretty&#39;</code></pre></li>
+<li><p>批量处理数据</p>
+<pre class="shell"><code>curl -XPOST &#39;localhost:9200/customer/external/_bulk?pretty&amp;pretty&#39; -H &#39;Content-Type: application/json&#39; -d&#39;
+{&quot;index&quot;:{&quot;_id&quot;:&quot;1&quot;}}
+{&quot;name&quot;: &quot;John Doe&quot; }
+{&quot;index&quot;:{&quot;_id&quot;:&quot;2&quot;}}
+{&quot;name&quot;: &quot;Jane Doe&quot; }
+{&quot;update&quot;:{&quot;_id&quot;:&quot;1&quot;}}
+{&quot;doc&quot;: { &quot;name&quot;: &quot;John Doe becomes Jane Doe&quot; } }
+{&quot;delete&quot;:{&quot;_id&quot;:&quot;2&quot;}}
+&#39;</code></pre></li>
+<li><p>当然，也可以将index和doc_type放在body里面</p>
+<pre class="shell"><code>curl -XPOST &#39;localhost:9200/_bulk?pretty&#39; -d&#39;
+{&quot;index&quot;:{&quot;_index&quot;: &quot;customer&quot;, &quot;_type&quot;: &quot;external&quot;, &quot;_id&quot;: &quot;10&quot;}}
+{&quot;name&quot;: &quot;abcd&quot;}
+&#39;</code></pre></li>
+<li><p>基本查询</p>
+<pre class="shell"><code>curl -XPOST &#39;localhost:9200/customer/_search?pretty&#39; -d&#39;
+{
+&quot;query&quot;: {
+&quot;match_all&quot;: {}
+}
+}
+&#39;</code></pre></li>
+</ul>
+<p><strong>后面不在提供完整的curl信息，仅仅给出<code>HTTP-METHOD</code>，<code>HTTP-URL</code>，<code>HTTP-BODY</code></strong></p>
+<h3 id="查询简介">查询简介</h3>
+<blockquote>
+<p>elasticsearch提供了一种JSON风格的DSL语言，可以用这种语言进行一些列查询</p>
+</blockquote>
+<h4 id="select-部分">SELECT 部分</h4>
+<ul>
+<li><p>最基本查询，查询所有document信息</p>
+<pre class="shell"><code>GET /customer/_search
+{&quot;query&quot;: {&quot;match_all&quot;: {}}}</code></pre></li>
+<li><p>除了query参数之外，还有其他参数可以影响查询结果，比如<code>from</code>，<code>size</code>，<code>sort</code></p>
+<pre class="shell"><code>GET /bank/_search
+{
+&quot;query&quot; : xxx,
+&quot;from&quot;: 0, #默认值0，表示返回`&lt;from&gt;`之后的参数
+&quot;size&quot;: 10, #默认值为10，表示最多返回10个返回结果
+&quot;sort&quot;: [
+    &quot;balance&quot;: {&quot;order&quot;: &quot;desc&quot;}
+]
+}</code></pre></li>
+<li><p>通常，返回所有的字段(_source参数下)，如果只想返回特定的field，可以这样查询</p>
+<pre class="shell"><code>GET /bank/_search
+{
+&quot;query&quot;: {&quot;match_all&quot;: {}},
+&quot;_source&quot;: [&quot;field1&quot;, &quot;field2&quot;, ...] # 如果你有sql背景，等同于：select field1, field2, ... from ...
+}</code></pre></li>
+</ul>
+<h4 id="where-部分">WHERE 部分</h4>
+<ul>
+<li><p>精确匹配</p>
+<pre class="shell"><code>GET /bank/_search
+{
+&quot;query&quot;: {&quot;match&quot;: {&quot;address&quot;: &quot;abc&quot;}}# SELECT * FROM xxx WHERE address = abc
+}
+{
+&quot;query&quot;: { #address 包含abc 并且 def
+    &quot;bool&quot;: {
+        &quot;must&quot;: [
+            {&quot;match&quot;: {&quot;address&quot;: &quot;abc&quot;}},
+            {&quot;match&quot;: {&quot;address&quot;: &quot;def&quot;}}
+        ]
+    }
+}
+}
+# query -&gt; bool -&gt;:
+# must --&gt; and
+# should --&gt; or
+# must_not --&gt; !must</code></pre></li>
+<li><p>过滤 filter</p>
+<pre class="shell"><code># query -&gt; bool -&gt; filter:
+# range</code></pre></li>
+<li><p>聚合</p>
+<pre class="shell"><code># aggs</code></pre></li>
+<li>|----query</li>
+<li>| |----bool</li>
+<li>| | |----must</li>
+<li>| | |----should</li>
+<li>| | |----must_not</li>
+<li>| | |----filter</li>
+<li>| | | |----range</li>
+<li><p>|----aggs</p></li>
+</ul>
+</body>
+</html>
