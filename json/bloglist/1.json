@@ -2,6 +2,22 @@
 	"data"	: 
 	[		
 		{
+			"id"	: "15",
+			"title"	: "elasticsearch集群配置",
+			"url"	: "2017-04-20.md.html",
+			"img"	: "",
+			"intro"	: "elasticsearch集群配置",
+			"time"	: "2017-04-20"
+		},
+		{
+			"id"	: "14",
+			"title"	: "elasticsearch学习笔记",
+			"url"	: "2017-03-31.md.html",
+			"img"	: "",
+			"intro"	: "elasticsearch学习笔记",
+			"time"	: "2017-03-31"
+		},
+		{
 			"id"	: "13",
 			"title"	: "golang function/method/interface",
 			"url"	: "2017-02-22.md.html",
