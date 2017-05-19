@@ -2,6 +2,14 @@
 	"data"	: 
 	[		
 		{
+			"id"	: "16",
+			"title"	: "hadoop/zookeeper/hbase(HA)体系搭建",
+			"url"	: "2017-05-18.md.html",
+			"img"	: "",
+			"intro"	: "hadoop/zookeeper/hbase(HA)体系搭建",
+			"time"	: "2017-05-18"
+		},
+		{
 			"id"	: "15",
 			"title"	: "elasticsearch集群配置",
 			"url"	: "2017-04-20.md.html",
