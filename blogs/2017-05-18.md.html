@@ -1,0 +1,584 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="../css/pandoc.css" type="text/css" />
+</head>
+<body>
+<div id="TOC">
+<ul>
+<li><a href="#hadoopzookeeperhbaseha体系搭建">hadoop/zookeeper/hbase(HA)体系搭建</a><ul>
+<li><a href="#环境简介">环境简介</a></li>
+<li><a href="#配置ssh无密码访问">配置ssh无密码访问</a></li>
+<li><a href="#配置java环境">配置java环境</a></li>
+<li><a href="#搭建zookeeper集群">搭建zookeeper集群</a></li>
+<li><a href="#搭建hadoop集群">搭建hadoop集群</a></li>
+<li><a href="#搭建hbase集群">搭建hbase集群</a></li>
+</ul></li>
+</ul>
+</div>
+<h2 id="hadoopzookeeperhbaseha体系搭建">hadoop/zookeeper/hbase(HA)体系搭建</h2>
+<h3 id="环境简介">环境简介</h3>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># 三台主机信息如下</span>
+<span class="co"># linux version: `CentOS release 6.5 (Final)`</span>
+
+<span class="kw">cat</span> /etc/hosts
+
+<span class="kw">192.168.59.10</span> slave7 <span class="co">#master</span>
+<span class="kw">192.168.59.11</span> slave8 <span class="co">#slave</span>
+<span class="kw">192.168.59.12</span> slave9 <span class="co">#slave</span></code></pre>
+<h3 id="配置ssh无密码访问">配置ssh无密码访问</h3>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># 在三台机器上都创建hadoop账户</span>
+
+<span class="co"># 增加用户</span>
+<span class="kw">useradd</span> hadoop
+<span class="co"># 查看用户信息</span>
+<span class="kw">id</span> hadoop
+<span class="co"># 修改用户密码</span>
+<span class="kw">password</span> hadoop</code></pre>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># 没有特别说明都是在hadoop账户下操作</span>
+<span class="co"># 在所有机器（三台）先生成密钥对</span>
+<span class="kw">ssh-keygen</span> -t rsa -P <span class="st">&#39;&#39;</span> -f ~/.ssh/id_rsa
+
+<span class="co"># 把公钥文件，追加到授权文件authorized_keys中</span>
+<span class="kw">cat</span> ~/.ssh/id_rsa.pub <span class="kw">&gt;&gt;</span> ~/.ssh/authorized_keys
+
+<span class="co"># 修改权限，注意这个别遗漏了</span>
+<span class="kw">chmod</span> 700 ~/.ssh
+<span class="kw">chmod</span> 644 ~/.ssh/authorized_keys
+
+<span class="co"># 修改ssh配置，请切换root账户操作</span>
+<span class="kw">vim</span> /etc/ssh/sshd_config
+把以下内容的注释取消掉
+<span class="co">#RSAAuthentication yes # 启用 RSA 认证</span>
+<span class="co">#PubkeyAuthentication yes # 启用公钥私钥配对认证方式</span>
+<span class="co">#AuthorizedKeysFile .ssh/authorized_key #公钥文件路径</span>
+
+<span class="co"># 重启ssh服务</span>
+<span class="kw">service</span> sshd restart
+<span class="co"># 退出root</span>
+
+<span class="co"># 验证本机是否无密码登录</span>
+<span class="kw">ssh</span> localhost
+
+<span class="co"># 最后，把本机的id_rsa.pub文件里的内容追加到“其他”服务器中的~/.ssh/authorized_keys里</span>
+<span class="co"># 重复以上操作</span>
+<span class="co"># 到此，无密码访问设置完毕</span></code></pre>
+<h3 id="配置java环境">配置java环境</h3>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># 解压后得到jdk目录</span>
+<span class="co"># /home/hadoop/jdk1.8.0_73</span>
+
+<span class="kw">vim</span> ~/.bashrc
+
+<span class="co"># 设置JDK相关信息</span>
+<span class="kw">export</span> <span class="ot">JAVA_HOME=</span>/home/hadoop/jdk1.8.0_73
+<span class="ot">PATH=${JAVA_HOME}</span>/bin:<span class="ot">$PATH</span></code></pre>
+<h3 id="搭建zookeeper集群">搭建zookeeper集群</h3>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># zookeeper版本：3.4.10</span>
+<span class="co"># 解压zookeeper-3.4.10.tar.gz</span>
+<span class="co"># zookeeper顶级目录为：/home/hadoop/zookeeper-3.4.10</span>
+
+<span class="co"># 创建dataDir和dataLogDir</span>
+<span class="kw">mkdir</span> /home/hadoop/zookeeper-3.4.10/<span class="dt">{datadir,datalogdir}</span>
+
+<span class="co"># 创建配置文件：zoo.cfg</span>
+<span class="kw">cp</span> /home/hadoop/zookeeper-3.4.10/conf/zoo_sample.cfg /home/hadoop/zookeeper-3.4.10/conf/zoo.cfg</code></pre>
+<p>在配置文件<code>zoo.cfg</code>中修改添加内容，最终结果如下</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># The number of milliseconds of each tick</span>
+<span class="ot">tickTime=</span>2000
+<span class="co"># The number of ticks that the initial </span>
+<span class="co"># synchronization phase can take</span>
+<span class="ot">initLimit=</span>10
+<span class="co"># The number of ticks that can pass between </span>
+<span class="co"># sending a request and getting an acknowledgement</span>
+<span class="ot">syncLimit=</span>5
+<span class="co"># the directory where the snapshot is stored.</span>
+<span class="co"># do not use /tmp for storage, /tmp here is just </span>
+<span class="co"># example sakes.</span>
+<span class="ot">dataDir=</span>/home/hadoop/zookeeper-3.4.10/datadir
+<span class="ot">dataLogDir=</span>/home/hadoop/zookeeper-3.4.10/datalogdir
+<span class="co"># the port at which the clients will connect</span>
+<span class="ot">clientPort=</span>2181
+<span class="co"># the maximum number of client connections.</span>
+<span class="co"># increase this if you need to handle more clients</span>
+<span class="co">#maxClientCnxns=60</span>
+<span class="co">#</span>
+<span class="co"># Be sure to read the maintenance section of the </span>
+<span class="co"># administrator guide before turning on autopurge.</span>
+<span class="co">#</span>
+<span class="co"># http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_maintenance</span>
+<span class="co">#</span>
+<span class="co"># The number of snapshots to retain in dataDir</span>
+<span class="kw">autopurge.snapRetainCount</span>=3
+<span class="co"># Purge task interval in hours</span>
+<span class="co"># Set to &quot;0&quot; to disable auto purge feature</span>
+<span class="kw">autopurge.purgeInterval</span>=1
+
+<span class="kw">server.7</span>=slave7:2888:3888
+<span class="kw">server.8</span>=slave8:2888:3888
+<span class="kw">server.9</span>=slave9:2888:3888</code></pre>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># 在datadir目录下创建myid文件</span>
+
+<span class="kw">echo</span> <span class="st">&quot;7&quot;</span> <span class="kw">&gt;</span> myid
+<span class="co"># 上面的“7”跟配置文件中“server.7”保持一致，</span>
+<span class="co"># 其他机器一样是类似的修改</span>
+
+<span class="co"># 确保在每台机器上都按照上面要求创建完毕</span>
+<span class="co"># 并且都在相同目录下，最后，对于每台服务器都执行</span>
+
+<span class="co"># 启动zookeeper</span>
+<span class="kw">cd</span> ~/zookeeper-3.4.10/bin/ <span class="kw">&amp;&amp;</span> <span class="kw">./zkServer.sh</span> start
+
+<span class="co"># 停止zookeeper命令</span>
+<span class="kw">./zkServer.sh</span> stop
+
+<span class="co"># 查看zookeeper状态命令</span>
+<span class="kw">./zkServer.sh</span> status</code></pre>
+<h3 id="搭建hadoop集群">搭建hadoop集群</h3>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># hadoop版本：2.7.3</span>
+<span class="co"># 解压hadoop-2.7.3.tar.gz</span>
+<span class="co"># hadoop顶级目录为：/home/hadoop/hadoop-2.7.3</span>
+
+<span class="co"># 先进入hadoop配置文件目录</span>
+
+<span class="kw">cd</span> /home/hadoop/hadoop-2.7.3/etc/hadoop</code></pre>
+<p>修改hadoop-env.sh</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">vim</span> hadoop-env.sh
+<span class="co"># 在脚本开头添加如下内容</span>
+<span class="kw">export</span> <span class="ot">JAVA_HOME=</span>/home/hadoop/jdk1.8.0_73</code></pre>
+<p>修改yarn-env.sh</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">vim</span> yarn-env.sh
+<span class="co"># 在脚本开头添加如下内容</span>
+<span class="kw">export</span> <span class="ot">JAVA_HOME=</span>/home/hadoop/jdk1.8.0_73</code></pre>
+<p>修改 core-site.xml，配置文件如下</p>
+<pre class="sourceCode xml"><code class="sourceCode xml"><span class="kw">&lt;?xml</span> version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;<span class="kw">?&gt;</span>
+<span class="kw">&lt;?xml-stylesheet</span> type=&quot;text/xsl&quot; href=&quot;configuration.xsl&quot;<span class="kw">?&gt;</span>
+<span class="co">&lt;!--</span>
+<span class="co">  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="co">  you may not use this file except in compliance with the License.</span>
+<span class="co">  You may obtain a copy of the License at</span>
+
+<span class="co">    http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="co">  Unless required by applicable law or agreed to in writing, software</span>
+<span class="co">  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="co">  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="co">  See the License for the specific language governing permissions and</span>
+<span class="co">  limitations under the License. See accompanying LICENSE file.</span>
+<span class="co">--&gt;</span>
+
+<span class="co">&lt;!-- Put site-specific property overrides in this file. --&gt;</span>
+
+<span class="kw">&lt;configuration&gt;</span>
+    <span class="co">&lt;!-- 指定hdfs的nameservice为ns1 名字随意--&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>fs.defaultFS<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>hdfs://ns1<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 指定hadoop临时目录 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>hadoop.tmp.dir<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>/home/hadoop/hadoop-2.7.3/hadoop.tmp.dir<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 指定zookeeper地址 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>ha.zookeeper.quorum<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>slave7:2181,slave8:2181,slave9:2181<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>io.file.buffer.size<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>4096<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+<span class="kw">&lt;/configuration&gt;</span></code></pre>
+<p>修改hdfs-site.xml，配置文件如下</p>
+<pre class="sourceCode xml"><code class="sourceCode xml"><span class="kw">&lt;?xml</span> version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;<span class="kw">?&gt;</span>
+<span class="kw">&lt;?xml-stylesheet</span> type=&quot;text/xsl&quot; href=&quot;configuration.xsl&quot;<span class="kw">?&gt;</span>
+<span class="co">&lt;!--</span>
+<span class="co">  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="co">  you may not use this file except in compliance with the License.</span>
+<span class="co">  You may obtain a copy of the License at</span>
+
+<span class="co">    http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="co">  Unless required by applicable law or agreed to in writing, software</span>
+<span class="co">  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="co">  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="co">  See the License for the specific language governing permissions and</span>
+<span class="co">  limitations under the License. See accompanying LICENSE file.</span>
+<span class="co">--&gt;</span>
+
+<span class="co">&lt;!-- Put site-specific property overrides in this file. --&gt;</span>
+
+<span class="kw">&lt;configuration&gt;</span>
+
+    <span class="co">&lt;!--指定hdfs的nameservice为ns1，需要和core-site.xml中的保持一致 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.nameservices<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>ns1<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- ns1下面有两个NameNode，分别是nn1，nn2（名字随意起,但是要与下面一致）--&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.ha.namenodes.ns1<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>nn1,nn2<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- nn1的RPC通信地址 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.namenode.rpc-address.ns1.nn1<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>slave7:9000<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- nn1的http通信地址 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.namenode.http-address.ns1.nn1<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>slave7:50070<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- nn2的RPC通信地址 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.namenode.rpc-address.ns1.nn2<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>slave8:9000<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- nn2的http通信地址 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.namenode.http-address.ns1.nn2<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>slave8:50070<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 指定NameNode的元数据在JournalNode上的存放位置 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.namenode.shared.edits.dir<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>qjournal://slave7:8485;slave8:8485;slave9:8485/ns1<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 指定JournalNode在本地磁盘存放数据的位置 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.journalnode.edits.dir<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>/home/hadoop/hadoop-2.7.3/journaldata<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 开启NameNode失败自动切换 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.ha.automatic-failover.enabled<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>true<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 配置失败自动切换实现方式 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.client.failover.proxy.provider.ns1<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 配置隔离机制方法，多个机制用换行分割，即每个机制暂用一行--&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.ha.fencing.methods<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>
+            sshfence
+            shell(/bin/true)
+        <span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 使用sshfence隔离机制时需要ssh免登陆 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.ha.fencing.ssh.private-key-files<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>/home/hadoop/.ssh/id_rsa<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 配置sshfence隔离机制超时时间 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.ha.fencing.ssh.connect-timeout<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>30000<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 指定HDFS副本的数量 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.replication<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>2<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- HDFS文件系统的元信息保存目录--&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.namenode.name.dir<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>file:///home/hadoop/hadoop-2.7.3/namenode_dir<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- HDFS文件系统的数据保存目录 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.datanode.data.dir<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>file:///home/hadoop/hadoop-2.7.3/datanode_dir<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="co">&lt;!-- 在NN和DN上开启WebHDFS (REST API)功能,不是必须 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.webhdfs.enabled<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>true<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>dfs.permissions<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>false<span class="kw">&lt;/value&gt;</span>
+        <span class="kw">&lt;description&gt;</span>
+        If &quot;true&quot;, enable permission checking in HDFS.
+        If &quot;false&quot;, permission checking is turned off,
+        but all other behavior is unchanged.
+        Switching from one parameter value to the other does not change the mode,
+        owner or group of files or directories.
+        <span class="kw">&lt;/description&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+<span class="kw">&lt;/configuration&gt;</span></code></pre>
+<p>修改mapred-site.xml，配置文件如下</p>
+<pre class="sourceCode xml"><code class="sourceCode xml"><span class="kw">&lt;?xml</span> version=&quot;1.0&quot;<span class="kw">?&gt;</span>
+<span class="kw">&lt;?xml-stylesheet</span> type=&quot;text/xsl&quot; href=&quot;configuration.xsl&quot;<span class="kw">?&gt;</span>
+<span class="co">&lt;!--</span>
+<span class="co">  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="co">  you may not use this file except in compliance with the License.</span>
+<span class="co">  You may obtain a copy of the License at</span>
+
+<span class="co">    http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="co">  Unless required by applicable law or agreed to in writing, software</span>
+<span class="co">  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="co">  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="co">  See the License for the specific language governing permissions and</span>
+<span class="co">  limitations under the License. See accompanying LICENSE file.</span>
+<span class="co">--&gt;</span>
+
+<span class="co">&lt;!-- Put site-specific property overrides in this file. --&gt;</span>
+
+<span class="kw">&lt;configuration&gt;</span>
+    <span class="co">&lt;!-- 指定mr框架为yarn方式 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>mapreduce.framework.name<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>yarn<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+<span class="kw">&lt;/configuration&gt;</span></code></pre>
+<p>修改yarn-site.xml，配置文件如下</p>
+<pre class="sourceCode xml"><code class="sourceCode xml"><span class="kw">&lt;?xml</span> version=&quot;1.0&quot;<span class="kw">?&gt;</span>
+<span class="co">&lt;!--</span>
+<span class="co">  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="co">  you may not use this file except in compliance with the License.</span>
+<span class="co">  You may obtain a copy of the License at</span>
+
+<span class="co">    http://www.apache.org/licenses/LICENSE-2.0</span>
+
+<span class="co">  Unless required by applicable law or agreed to in writing, software</span>
+<span class="co">  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="co">  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="co">  See the License for the specific language governing permissions and</span>
+<span class="co">  limitations under the License. See accompanying LICENSE file.</span>
+<span class="co">--&gt;</span>
+<span class="kw">&lt;configuration&gt;</span>
+
+<span class="co">&lt;!-- Site specific YARN configuration properties --&gt;</span>
+
+    <span class="co">&lt;!-- 指定nodemanager启动时加载server的方式为shuffle server --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>yarn.nodemanager.aux-services<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>mapreduce_shuffle<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+    
+    <span class="co">&lt;!-- 指定resourcemanager地址 --&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>yarn.resourcemanager.hostname<span class="kw">&lt;/name&gt;</span>
+        <span class="kw">&lt;value&gt;</span>slave9<span class="kw">&lt;/value&gt;</span>
+    <span class="kw">&lt;/property&gt;</span>
+
+<span class="kw">&lt;/configuration&gt;</span></code></pre>
+<p>修改slaves文件，配置文件如下</p>
+<pre class="sourceCode xml"><code class="sourceCode xml">slave7
+slave8
+slave9</code></pre>
+<p>最后，将hadoop2.7.3目录同步复制到所有服务器上</p>
+<p>启动hadoop集群(如果是首次启动会特别标注说明，关闭集群顺序刚好相反)</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># 确保zookeeper集群先启动，在本教程中，分别到slave7，slave8，slave9上在zookeeper目录下执行：</span>
+<span class="kw">./zkServer.sh</span> start
+<span class="co"># 关闭</span>
+<span class="kw">./zkServer.sh</span> stop
+
+<span class="co"># 格式化zookeeper集群，在slave7上执行(仅限首次启动)：</span>
+<span class="kw">bin/hdfs</span> zkfc -formatZK
+
+<span class="co"># 启动JournalNode集群</span>
+<span class="co"># 在slave7上执行：</span>
+<span class="kw">sbin/hadoop-daemons.sh</span> start journalnode
+<span class="co"># 关闭</span>
+<span class="kw">sbin/hadoop-daemons.sh</span> stop journalnode
+<span class="co"># 或者在slave7，slave8，slave9上分别都执行(注意daemons.sh和daemon.sh的区别)：</span>
+<span class="kw">sbin/hadoop-daemon.sh</span> start journalnode
+<span class="co"># 关闭</span>
+<span class="kw">sbin/hadoop-daemon.sh</span> stop journalnode
+
+<span class="co"># 格式化集群的namenode(hdfs) (仅限首次启动)</span>
+<span class="kw">bin/hadoop</span> namenode -format
+
+<span class="co"># 启动namenode(1)，在slave7上执行：</span>
+<span class="kw">sbin/hadoop-daemon.sh</span> start namenode
+<span class="co"># 关闭</span>
+<span class="kw">sbin/hadoop-daemon.sh</span> stop namenode
+
+<span class="co"># 同步namenode(1)到namenode(2)，并启动namenode(2)，在slave8上执行：</span>
+<span class="kw">bin/hdfs</span> namenode –bootstrapStandby
+<span class="kw">sbin/hadoop-daemon.sh</span> start namenode
+<span class="co"># 关闭</span>
+<span class="kw">sbin/hadoop-daemon.sh</span> stop namenode
+
+<span class="co"># 启动所有datanode，在slave7上执行：</span>
+<span class="kw">sbin/hadoop-daemons.sh</span> start datanode
+<span class="co"># 关闭</span>
+<span class="kw">sbin/hadoop-daemons.sh</span> stop datanode
+
+<span class="co"># 启动yarn，在作为资源管理器上的slave9机器上执行启动：</span>
+<span class="kw">sbin/start-yarn.sh</span>
+<span class="co"># 关闭</span>
+<span class="kw">sbin/stop-yarn.sh</span>
+
+<span class="co"># 启动zkfc集群，在slave7上执行：</span>
+<span class="kw">sbin/hadoop-daemons.sh</span> start zkfc
+<span class="co"># 关闭</span>
+<span class="kw">sbin/hadoop-daemons.sh</span> stop zkfc</code></pre>
+<h3 id="搭建hbase集群">搭建hbase集群</h3>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># hbase版本：1.2.5</span>
+<span class="co"># 解压hbase-1.2.5-bin.tar.gz</span>
+<span class="co"># hbase顶级目录为：/home/hadoop/hbase-1.2.5</span>
+<span class="co"># 首先，进入hbase配置文件目录</span>
+<span class="kw">cd</span> /home/hadoop/hbase-1.2.5</code></pre>
+<p>打开hbase-env.sh，添加如下信息：</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">export</span> <span class="ot">JAVA_HOME=</span>/home/hadoop/jdk1.8.0_73
+<span class="kw">export</span> <span class="ot">HBASE_LOG_DIR=${HBASE_HOME}</span>/logs
+<span class="co"># 不使用自带的zookeeper</span>
+<span class="kw">export</span> <span class="ot">HBASE_MANAGES_ZK=</span>false</code></pre>
+<p>配置hbase-site.xml，最终内容如下：</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">&lt;?xml</span> version=<span class="st">&quot;1.0&quot;</span>?<span class="kw">&gt;</span>
+<span class="kw">&lt;?xml-stylesheet</span> type=<span class="st">&quot;text/xsl&quot;</span> href=<span class="st">&quot;configuration.xsl&quot;</span>?<span class="kw">&gt;</span>
+<span class="kw">&lt;</span>!<span class="kw">--</span>
+<span class="kw">/**</span>
+ <span class="kw">*</span>
+ <span class="kw">*</span> Licensed to the Apache Software Foundation (ASF) <span class="kw">under</span> one
+ <span class="kw">*</span> or more contributor license agreements.  See the NOTICE file
+ <span class="kw">*</span> distributed with this work for additional information
+ <span class="kw">*</span> regarding copyright ownership.  The ASF licenses this file
+ <span class="kw">*</span> to you under the Apache License, Version 2.0 (the
+ <span class="kw">*</span> <span class="st">&quot;License&quot;</span>); <span class="kw">you</span> may not use this file except in compliance
+ <span class="kw">*</span> with the License.  You may obtain a copy of the License at
+ <span class="kw">*</span>
+ <span class="kw">*</span>     http://www.apache.org/licenses/LICENSE-2.0
+ <span class="kw">*</span>
+ <span class="kw">*</span> Unless required by applicable law or agreed to in writing, software
+ <span class="kw">*</span> distributed under the License is distributed on an <span class="st">&quot;AS IS&quot;</span> BASIS,
+ <span class="kw">*</span> WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ <span class="kw">*</span> See the License for the specific language governing permissions and
+ <span class="kw">*</span> limitations under the License.
+ <span class="kw">*/</span>
+<span class="kw">--&gt;</span>
+<span class="kw">&lt;configuration&gt;</span>
+
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>hbase.tmp.dir<span class="kw">&lt;</span>/name<span class="kw">&gt;</span>
+        <span class="kw">&lt;value&gt;</span>/home/hadoop/hbase-1.2.5/hbase.tmp.dir<span class="kw">&lt;</span>/value<span class="kw">&gt;</span>
+    <span class="kw">&lt;</span>/<span class="kw">property&gt;</span>
+
+    &lt;!-- 设置HRegionServers共享目录 --&gt;  
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>hbase.rootdir<span class="kw">&lt;</span>/name<span class="kw">&gt;</span>
+        <span class="kw">&lt;value&gt;</span>hdfs://slave7:9000/hbase<span class="kw">&lt;</span>/value<span class="kw">&gt;</span>
+        <span class="kw">&lt;description&gt;</span>Hbase data director<span class="kw">&lt;</span>/description<span class="kw">&gt;</span>
+    <span class="kw">&lt;</span>/<span class="kw">property&gt;</span>
+
+    &lt;!-- 开启分布式模式 -<span class="kw">-&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>hbase.cluster.distributed<span class="kw">&lt;</span>/name<span class="kw">&gt;</span>
+        <span class="kw">&lt;value&gt;</span>true<span class="kw">&lt;</span>/value<span class="kw">&gt;</span>
+    <span class="kw">&lt;</span>/<span class="kw">property&gt;</span>
+
+    &lt;!-- 设置HMaster的rpc端口, 由于采用的是HA模式，这里只写端口就可以了，不需要再写主机名<span class="kw">--&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>hbase.master.port<span class="kw">&lt;</span>/name<span class="kw">&gt;</span>
+        <span class="kw">&lt;value&gt;60000&lt;</span>/value<span class="kw">&gt;</span>
+    <span class="kw">&lt;</span>/<span class="kw">property&gt;</span>
+    &lt;!-- 对比参考
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>hbase.master<span class="kw">&lt;</span>/name<span class="kw">&gt;</span>
+        <span class="kw">&lt;value&gt;</span>hdfs://master:<span class="kw">60000&lt;</span>/value<span class="kw">&gt;</span>
+    <span class="kw">&lt;</span>/<span class="kw">property&gt;</span>
+    <span class="kw">--&gt;</span>
+
+    &lt;!-- 设置HMaster的http web console端口 --&gt; 
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>hbase.master.info.port<span class="kw">&lt;</span>/name<span class="kw">&gt;</span>
+        <span class="kw">&lt;value&gt;16010&lt;</span>/value<span class="kw">&gt;</span>
+    <span class="kw">&lt;</span>/<span class="kw">property&gt;</span>
+
+    &lt;!--zookeeper设置，依赖zookeeper集群设置<span class="kw">--&gt;</span>
+    &lt;!--zookeeper集群信息设置<span class="kw">--&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>hbase.zookeeper.quorum<span class="kw">&lt;</span>/name<span class="kw">&gt;</span>
+        <span class="kw">&lt;value&gt;</span>slave7,slave8,slave<span class="kw">9&lt;</span>/value<span class="kw">&gt;</span>
+    <span class="kw">&lt;</span>/<span class="kw">property&gt;</span>
+
+    &lt;!--zookeeper端口-<span class="kw">-&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>hbase.zookeeper.property.clientPort<span class="kw">&lt;</span>/name<span class="kw">&gt;</span>
+        <span class="kw">&lt;value&gt;2181&lt;</span>/value<span class="kw">&gt;</span>
+    <span class="kw">&lt;</span>/<span class="kw">property&gt;</span>
+
+    &lt;!--请参考zookeeper配置文件zoo.cfg中dataDir的值 <span class="kw">--&gt;</span>
+    <span class="kw">&lt;property&gt;</span>
+        <span class="kw">&lt;name&gt;</span>hbase.zookeeper.property.dataDir<span class="kw">&lt;</span>/name<span class="kw">&gt;</span>
+        <span class="kw">&lt;value&gt;</span>/home/hadoop/zookeeper-3.4.10/datadir<span class="kw">&lt;</span>/value<span class="kw">&gt;</span>
+    <span class="kw">&lt;</span>/<span class="kw">property&gt;</span>
+
+<span class="kw">&lt;</span>/<span class="kw">configuration&gt;</span></code></pre>
+<p>配置regionservers，内容如下：</p>
+<pre><code>slave8
+slave9</code></pre>
+<p>scp hbase目录到所有服务器(slave7,slave8,slave9)</p>
+<p>启动hbase集群：</p>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># 首先确保hadoop集群启动</span>
+
+<span class="co"># 启动hbase集群，在slave7上执行：</span>
+<span class="kw">bin/start-hbase.sh</span>
+<span class="co"># 关闭</span>
+<span class="kw">bin/stop-hbase.sh</span></code></pre>
+<p>后记：整个集群的启动先后顺序</p>
+<p><code>zookeeper -&gt; hadoop -&gt; hbase</code></p>
+<p>多次格式化集群，最后phoenix连接时，报错：</p>
+<pre class="sourceCode java"><code class="sourceCode java">org.<span class="fu">apache</span>.<span class="fu">phoenix</span>.<span class="fu">exception</span>.<span class="fu">PhoenixIOException</span>: SYSTEM.<span class="fu">CATALOG</span>
+<span class="co">//解决方法，停止hbase集群，执行 bin/hbase clean --cleanZk，然后启动hbase集群</span></code></pre>
+<p>参考文档</p>
+<ul>
+<li>pacdata内部文档</li>
+<li><a href="http://blog.csdn.net/u011414200/article/details/50437356">HA 模式下的 Hadoop+ZooKeeper+HBase 启动顺序</a></li>
+<li><a href="http://www.iteye.com/news/30739">Hadoop2.5.2 HA高可靠性集群搭建(Hadoop+Zookeeper)</a></li>
+</ul>
+</body>
+</html>
