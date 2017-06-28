@@ -33,7 +33,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <li><a href="#使用redis实现分布式锁">使用redis实现分布式锁</a><ul>
 <li><a href="#redis关键命令">redis关键命令</a></li>
 <li><a href="#基本思想">基本思想</a></li>
-<li><a href="#代码实现">代码实现</a></li>
+<li><a href="#代码实现golang">代码实现(golang)</a></li>
 </ul></li>
 </ul>
 </div>
@@ -57,7 +57,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <blockquote>
 <p>主要实现<code>Lock</code>函数，此函数进行一次加锁尝试。 首先调用<code>SETNX</code>设置，如果成功，则成功获得锁. 否则，用<code>GET</code>获取key值，和当前时间比较：1，如果对比发现过期，放弃加锁。否则进行下一步 2：用<code>GETSET</code>获取key值，如果发现未过期，则加锁成功。 如果过期，则表示有其他客户端 已经先于本客户端设置，放弃加锁。</p>
 </blockquote>
-<h3 id="代码实现">代码实现</h3>
+<h3 id="代码实现golang">代码实现(golang)</h3>
 <pre class="sourceCode go"><code class="sourceCode go"><span class="co">/*</span>
 <span class="co">   分布式锁测试</span>
 <span class="co">    var manager = Base.RedisManager{}</span>
