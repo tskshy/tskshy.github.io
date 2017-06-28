@@ -2,6 +2,14 @@
 	"data"	: 
 	[		
 		{
+			"id"	: "17",
+			"title"	: "使用redis实现分布式锁",
+			"url"	: "2017-06-28.md.html",
+			"img"	: "",
+			"intro"	: "用redis(SETNX,GET,GETSET)实现分布式锁",
+			"time"	: "2017-06-28"
+		},
+		{
 			"id"	: "16",
 			"title"	: "hadoop/zookeeper/hbase(HA)体系搭建",
 			"url"	: "2017-05-18.md.html",
