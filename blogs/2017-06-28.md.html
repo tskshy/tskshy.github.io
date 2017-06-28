@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="../css/pandoc.css" type="text/css" />
+</head>
+<body>
+<div id="TOC">
+<ul>
+<li><a href="#使用redis实现分布式锁">使用redis实现分布式锁</a><ul>
+<li><a href="#redis关键命令">redis关键命令</a></li>
+<li><a href="#基本思想">基本思想</a></li>
+<li><a href="#代码实现">代码实现</a></li>
+</ul></li>
+</ul>
+</div>
+<h2 id="使用redis实现分布式锁">使用redis实现分布式锁</h2>
+<h3 id="redis关键命令">redis关键命令</h3>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">SETNX</span> key value
+<span class="co"># SETNX: SET if Not eXists</span>
+<span class="co"># 将key的值设置为value</span>
+<span class="co"># 当key存在时，不做任何操作，返回   0</span>
+<span class="co"># 当key不存在时，进行设置操作，返回 1</span>
+
+<span class="kw">GET</span> key
+<span class="co"># 返回key的值</span>
+
+<span class="kw">GETSET</span> key value
+<span class="co"># 返回key的旧值，同时将key的值设置成value</span></code></pre>
+<h3 id="基本思想">基本思想</h3>
+<blockquote>
+<p>key为任意值，value代表过期时间(unix time = now + expire)</p>
+</blockquote>
+<blockquote>
+<p>主要实现<code>Lock</code>函数，此函数进行一次加锁尝试。 首先调用<code>SETNX</code>设置，如果成功，则成功获得锁. 否则，用<code>GET</code>获取key值，和当前时间比较：1，如果对比发现过期，放弃加锁。否则进行下一步 2：用<code>GETSET</code>获取key值，如果发现未过期，则加锁成功。 如果过期，则表示有其他客户端 已经先于本客户端设置，放弃加锁。</p>
+</blockquote>
+<h3 id="代码实现">代码实现</h3>
+<pre class="sourceCode go"><code class="sourceCode go"><span class="co">/*</span>
+<span class="co">   分布式锁测试</span>
+<span class="co">    var manager = Base.RedisManager{}</span>
+<span class="co">    if !manager.Init(&quot;127.0.0.1:6379&quot;, &quot;&quot;, 7) {</span>
+<span class="co">        fmt.Println(&quot;redis 初始化失败&quot;)</span>
+<span class="co">        return</span>
+<span class="co">    }</span>
+
+<span class="co">    fmt.Println(&quot;redis初始化成功&quot;)</span>
+
+<span class="co">    var now = time.Now().Unix()</span>
+<span class="co">    fmt.Println(&quot;start at: &quot;, now)</span>
+<span class="co">    //注意不能用同一个连接</span>
+<span class="co">    var redis1 = manager.Pool.Get()</span>
+<span class="co">    var redis2 = manager.Pool.Get()</span>
+<span class="co">    var redis3 = manager.Pool.Get()</span>
+<span class="co">    var redis4 = manager.Pool.Get()</span>
+
+<span class="co">    var chn = make(chan int, 4)</span>
+
+<span class="co">    for {</span>
+<span class="co">        var now = time.Now().Unix()</span>
+<span class="co">        fmt.Println(&quot;now time: &quot;, now)</span>
+<span class="co">        go func() {</span>
+<span class="co">            if ctx.TryLock(redis1, &quot;test&quot;, 10, 3) {</span>
+<span class="co">                chn &lt;- 1</span>
+<span class="co">            } else {</span>
+<span class="co">                chn &lt;- 0</span>
+<span class="co">            }</span>
+<span class="co">        }()</span>
+<span class="co">        go func() {</span>
+<span class="co">            if ctx.TryLock(redis2, &quot;test&quot;, 10, 3) {</span>
+<span class="co">                chn &lt;- 1</span>
+<span class="co">            } else {</span>
+<span class="co">                chn &lt;- 0</span>
+<span class="co">            }</span>
+<span class="co">        }()</span>
+<span class="co">        go func() {</span>
+<span class="co">            if ctx.TryLock(redis3, &quot;test&quot;, 10, 3) {</span>
+<span class="co">                chn &lt;- 1</span>
+<span class="co">            } else {</span>
+<span class="co">                chn &lt;- 0</span>
+<span class="co">            }</span>
+<span class="co">        }()</span>
+<span class="co">        go func() {</span>
+<span class="co">            if ctx.TryLock(redis4, &quot;test&quot;, 10, 3) {</span>
+<span class="co">                chn &lt;- 1</span>
+<span class="co">            } else {</span>
+<span class="co">                chn &lt;- 0</span>
+<span class="co">            }</span>
+<span class="co">        }()</span>
+
+<span class="co">        fmt.Print(&lt;-chn)</span>
+<span class="co">        fmt.Print(&lt;-chn)</span>
+<span class="co">        fmt.Print(&lt;-chn)</span>
+<span class="co">        fmt.Println(&lt;-chn)</span>
+<span class="co">        fmt.Println(&quot;===============&quot;)</span>
+<span class="co">        time.Sleep(1 * time.Second)</span>
+
+<span class="co">    }</span>
+
+<span class="co">*/</span>
+
+<span class="co">/*</span>
+<span class="co"> expire: N秒后锁失效，允许其他客户端竞争</span>
+<span class="co">*/</span>
+<span class="kw">func</span> Lock(conn redis.Conn, key <span class="dt">string</span>, expire <span class="dt">int</span>) <span class="dt">bool</span> {
+    <span class="kw">var</span> now <span class="dt">int64</span> = time.Now().Unix()
+
+    r1, err := conn.Do(<span class="st">&quot;SETNX&quot;</span>, key, now+<span class="dt">int64</span>(expire))
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        log.Println(err)
+        <span class="kw">return</span> <span class="ot">false</span>
+    }
+
+    v1, err := redis.Int(r1, err)
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        <span class="kw">return</span> <span class="ot">false</span>
+    }
+
+    <span class="kw">if</span> v1 == <span class="dv">1</span> {
+        <span class="kw">return</span> <span class="ot">true</span>
+    }
+
+    <span class="co">/*此时key存在，查看对应的值*/</span>
+    r, err := conn.Do(<span class="st">&quot;GET&quot;</span>, key)
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        <span class="kw">return</span> <span class="ot">false</span>
+    }
+
+    v2, err := redis.Int64(r, err)
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        <span class="kw">return</span> <span class="ot">false</span>
+    }
+
+    <span class="kw">if</span> now &lt; v2 {
+        <span class="co">/*值未过期，放弃锁*/</span>
+        <span class="kw">return</span> <span class="ot">false</span>
+    } <span class="kw">else</span> {
+        <span class="co">/*获取旧值，设置新值*/</span>
+        r, err := conn.Do(<span class="st">&quot;GETSET&quot;</span>, key, now+<span class="dt">int64</span>(expire))
+        <span class="kw">if</span> err != <span class="ot">nil</span> {
+            <span class="kw">return</span> <span class="ot">false</span>
+        }
+
+        v3, err := redis.Int64(r, err)
+        <span class="kw">if</span> err != <span class="ot">nil</span> {
+            <span class="kw">return</span> <span class="ot">false</span>
+        }
+
+        <span class="kw">if</span> now &gt;= v3 {
+            <span class="kw">return</span> <span class="ot">true</span>
+        }
+        <span class="co">/*</span>
+<span class="co">          else情况：表示其他redis客户端抢先一步设置成功，此时放弃锁</span>
+<span class="co">          return false</span>
+<span class="co">        */</span>
+    }
+
+    <span class="kw">return</span> <span class="ot">false</span>
+}
+
+<span class="co">/*</span>
+<span class="co"> 释放锁</span>
+<span class="co">*/</span>
+<span class="kw">func</span> Unlock(conn redis.Conn, key <span class="dt">string</span>) <span class="dt">bool</span> {
+    <span class="kw">var</span> _, err = conn.Do(<span class="st">&quot;DEL&quot;</span>, key)
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        <span class="kw">return</span> <span class="ot">false</span>
+    }
+
+    <span class="kw">return</span> <span class="ot">true</span>
+}
+
+<span class="co">/*</span>
+<span class="co"> 尝试加锁</span>
+<span class="co">*/</span>
+<span class="kw">func</span> TryLock(conn redis.Conn, key <span class="dt">string</span>, expire <span class="dt">int</span>, timeout <span class="dt">int</span>) <span class="dt">bool</span> {
+    <span class="kw">var</span> b = Lock(conn, key, expire)
+    <span class="kw">if</span> b {
+        <span class="kw">return</span> b
+    }
+
+    <span class="kw">if</span> timeout == <span class="dv">0</span> {
+        <span class="kw">return</span> <span class="ot">false</span>
+    }
+    <span class="kw">var</span> ticker = time.NewTicker(time.Duration(timeout) * time.Second)
+    <span class="kw">defer</span> ticker.Stop()
+    <span class="kw">for</span> {
+        <span class="kw">select</span> {
+        <span class="kw">case</span> &lt;-time.After(<span class="dv">100</span> * time.Millisecond):
+            <span class="kw">if</span> Lock(conn, key, expire) {
+                <span class="co">/*成功lock后返回，否则一直持续到超时*/</span>
+                <span class="kw">return</span> <span class="ot">true</span>
+            }
+        <span class="kw">case</span> &lt;-ticker.C:
+            <span class="kw">return</span> <span class="ot">false</span>
+        }
+
+    }
+
+}</code></pre>
+</body>
+</html>
