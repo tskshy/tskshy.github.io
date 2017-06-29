@@ -213,8 +213,13 @@ code > span.er { color: #ff0000; font-weight: bold; }
                 <span class="co">/*成功lock后返回，否则一直持续到超时*/</span>
                 <span class="kw">return</span> <span class="ot">true</span>
             }
+        }
+
+        <span class="kw">select</span> {
         <span class="kw">case</span> &lt;-ticker.C:
             <span class="kw">return</span> <span class="ot">false</span>
+        <span class="kw">default</span>:
+            <span class="co">//DO NOTHING</span>
         }
 
     }
