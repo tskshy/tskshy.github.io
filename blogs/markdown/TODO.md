@@ -6,3 +6,9 @@
 
 ## es集群优化
 [Elasticsearch5.2.1集群搭建，动态加入节点，并添加监控诊断插件](http://blog.csdn.net/shudaqi2010/article/details/71711610)
+
+## 余弦定理计算句子相似性
+[余弦定理计算句子相似性](http://www.cnblogs.com/chaosimple/archive/2013/04/07/3005786.html)
+
+## Elasticsearch基本概念及核心配置文件详解
+[Elasticsearch基本概念及核心配置文件详解](http://www.cnblogs.com/xiaochina/p/6855591.html)
