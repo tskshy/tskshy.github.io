@@ -12,3 +12,7 @@
 
 ## Elasticsearch基本概念及核心配置文件详解
 [Elasticsearch基本概念及核心配置文件详解](http://www.cnblogs.com/xiaochina/p/6855591.html)
+
+[es优化配置参考](http://ju.outofmemory.cn/entry/270617)
+
+[es中文wiki](https://github.com/13428282016/elasticsearch-CN/wiki)
