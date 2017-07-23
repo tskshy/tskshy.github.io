@@ -2,6 +2,14 @@
 	"data"	: 
 	[		
 		{
+			"id"	: "18",
+			"title"	: "nginx系列笔记",
+			"url"	: "2017-07-23.md.html",
+			"img"	: "",
+			"intro"	: "nginx系列笔记",
+			"time"	: "2017-07-23"
+		},
+		{
 			"id"	: "17",
 			"title"	: "使用redis实现分布式锁",
 			"url"	: "2017-06-28.md.html",
