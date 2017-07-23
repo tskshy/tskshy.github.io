@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="../css/pandoc.css" type="text/css" />
+</head>
+<body>
+<div id="TOC">
+<ul>
+<li><a href="#nginx系列相关">nginx系列相关</a><ul>
+<li><a href="#nginx-入门">nginx 入门</a></li>
+<li><a href="#nginx-http-location匹配规则">nginx http location匹配规则</a></li>
+</ul></li>
+</ul>
+</div>
+<h2 id="nginx系列相关">nginx系列相关</h2>
+<h3 id="nginx-入门">nginx 入门</h3>
+<pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#启动，如果不带配置文件，则运行默认匹配文件</span>
+<span class="kw">nginx</span> -c nignx.conf 
+
+<span class="co">#关闭</span>
+<span class="kw">nginx</span> -c nignx.conf -s stop
+
+<span class="co">#重载配置文件</span>
+<span class="kw">nginx</span> -c nignx.conf -s reload
+
+<span class="co">#测试配置文件</span>
+<span class="kw">nginx</span> -c nignx.conf -t</code></pre>
+<h3 id="nginx-http-location匹配规则">nginx http location匹配规则</h3>
+<pre class="conf"><code># 语法规则
+
+location &lt;=|^~|~|~*|/&gt; &lt;url&gt; {
+
+}
+</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">模式</th>
+<th align="left">优先级</th>
+<th align="left">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">location = url</td>
+<td align="left">0</td>
+<td align="left">精确匹配，只有完全匹配才能生效</td>
+</tr>
+<tr class="even">
+<td align="left">location ^~ url-prefix</td>
+<td align="left">1</td>
+<td align="left">前缀匹配，优先级在正则匹配之前</td>
+</tr>
+<tr class="odd">
+<td align="left">location ~ url-pattern</td>
+<td align="left">2</td>
+<td align="left">正则匹配，区分大小写</td>
+</tr>
+<tr class="even">
+<td align="left">location ~* url-pattern</td>
+<td align="left">3</td>
+<td align="left">正则匹配，不区分大小写</td>
+</tr>
+<tr class="odd">
+<td align="left">location /url-prefix</td>
+<td align="left">4</td>
+<td align="left">前缀匹配，优先级在正则匹配之后</td>
+</tr>
+<tr class="even">
+<td align="left">location /</td>
+<td align="left">5</td>
+<td align="left">通用匹配，其他location未匹配时匹配</td>
+</tr>
+</tbody>
+</table>
+<p>匹配顺序说明</p>
+<ul>
+<li>首先，精确匹配<code>=</code></li>
+<li>其次，前缀匹配<code>^~</code></li>
+<li>然后，正则匹配<code>~</code>，多个正则匹配按照位置文件中的先后顺序</li>
+<li>然后，不带修饰的前缀匹配<code>/xxx</code></li>
+<li>最后，通用匹配<code>/</code></li>
+</ul>
+<p><strong>前缀匹配时，按照最大匹配原则进行匹配</strong></p>
+</body>
+</html>
