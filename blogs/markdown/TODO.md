@@ -19,4 +19,5 @@
 
 [mysql数据库执行mysqladmin flush-hosts方法 ](http://blog.csdn.net/zht666/article/details/41310661)
 
+[double array trie](http://blog.csdn.net/heiyeshuwu/article/details/42526461)
 [double array trie](http://www.cnblogs.com/zhangchaoyang/articles/4508266.html)
