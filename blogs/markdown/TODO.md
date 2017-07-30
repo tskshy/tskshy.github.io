@@ -16,3 +16,7 @@
 [es优化配置参考](http://ju.outofmemory.cn/entry/270617)
 
 [es中文wiki](https://github.com/13428282016/elasticsearch-CN/wiki)
+
+[mysql数据库执行mysqladmin flush-hosts方法 ](http://blog.csdn.net/zht666/article/details/41310661)
+
+[double array trie](http://blog.csdn.net/heiyeshuwu/article/details/42526461)
