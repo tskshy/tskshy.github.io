@@ -21,3 +21,5 @@
 
 [double array trie](http://blog.csdn.net/heiyeshuwu/article/details/42526461)
 [double array trie](http://www.cnblogs.com/zhangchaoyang/articles/4508266.html)
+
+当前Hadoop版本比较混乱，让很多用户不知所措。实际上，当前Hadoop只有两个版本：Hadoop 1.0和Hadoop 2.0，其中，Hadoop 1.0由一个分布式文件系统HDFS和一个离线计算框架MapReduce组成，而Hadoop 2.0则包含一个支持NameNode横向扩展的HDFS，一个资源管理系统YARN和一个运行在YARN上的离线计算框架MapReduce。相比于Hadoop 1.0，Hadoop 2.0功能更加强大，且具有更好的扩展性、性能，并支持多种计算框架。
