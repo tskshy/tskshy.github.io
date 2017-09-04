@@ -2,6 +2,14 @@
 	"data"	:
 	[		
 		{
+			"id"	: "20",
+			"title"	: "linux(debian)文件比较工具",
+			"url"	: "",
+			"img"	: "",
+			"intro"	: "安装：apt-get install meld，执行命令：meld",
+			"time"	: "2017-08-03"
+		},
+		{
 			"id"	: "19",
 			"title"	: "golang利用thrift2操作hbase",
 			"url"	: "2017-07-28.md.html",
