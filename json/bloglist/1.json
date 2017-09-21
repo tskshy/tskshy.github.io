@@ -2,12 +2,20 @@
 	"data"	:
 	[		
 		{
+			"id"	: "21",
+			"title"	: "linux(debian8)环境下sogou输入法不能输出中文",
+			"url"	: "2017-08-03.md.html",
+			"img"	: "",
+			"intro"	: "linux(debian8)环境下sogou输入法不能输出中文",
+			"time"	: "2017-08-03"
+		},
+		{
 			"id"	: "20",
 			"title"	: "linux(debian)文件比较工具",
 			"url"	: "",
 			"img"	: "",
 			"intro"	: "安装：apt-get install meld，执行命令：meld",
-			"time"	: "2017-08-03"
+			"time"	: "2017-08-01"
 		},
 		{
 			"id"	: "19",
