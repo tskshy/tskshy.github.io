@@ -2,6 +2,14 @@
 	"data"	:
 	[		
 		{
+			"id"	: "22",
+			"title"	: "es function score",
+			"url"	: "2017-09-01.md.html",
+			"img"	: "",
+			"intro"	: "es function score",
+			"time"	: "2017-09-01"
+		},
+		{
 			"id"	: "21",
 			"title"	: "linux(debian8)环境下sogou输入法不能输出中文",
 			"url"	: "2017-08-03.md.html",

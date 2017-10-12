@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="../css/pandoc.css" type="text/css" />
+</head>
+<body>
+<div id="TOC">
+<ul>
+<li><a href="#es---function-score">es - function score</a></li>
+</ul>
+</div>
+<h1 id="es---function-score">es - function score</h1>
+<h4 id="描述">描述</h4>
+<p>elasticsearch下的结构，一个index下有n个结构一样的document， document以数字命名，多个document联合检索时，要求document数值小的得到的score相对第一点。</p>
+<h4 id="解决方法">解决方法</h4>
+<p>如果我们要根据“question”这个字段(analyzed)进行检索</p>
+<pre class="sourceCode json"><code class="sourceCode json"><span class="er">POST</span> <span class="er">qa-pair/8,10/_search?search_type=dfs_query_then_fetch</span>
+<span class="fu">{</span>
+  <span class="dt">&quot;query&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;function_score&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+      <span class="dt">&quot;query&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+        <span class="dt">&quot;match&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+          <span class="dt">&quot;question&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+            <span class="dt">&quot;query&quot;</span><span class="fu">:</span> <span class="st">&quot;问题 111&quot;</span><span class="fu">,</span>
+            <span class="dt">&quot;analyzer&quot;</span><span class="fu">:</span> <span class="st">&quot;ik-max-word-with-synonym&quot;</span>
+          <span class="fu">}</span>
+        <span class="fu">}</span>
+      <span class="fu">},</span>
+      <span class="dt">&quot;functions&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+        <span class="fu">{</span>
+          <span class="dt">&quot;script_score&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+            <span class="dt">&quot;script&quot;</span><span class="fu">:</span> <span class="st">&quot;_score * Integer.parseInt(doc[&#39;_type&#39;].value)&quot;</span>
+          <span class="fu">}</span>
+        <span class="fu">}</span>
+      <span class="ot">]</span>
+    <span class="fu">}</span>
+  <span class="fu">}</span>
+<span class="fu">}</span></code></pre>
+</body>
+</html>
