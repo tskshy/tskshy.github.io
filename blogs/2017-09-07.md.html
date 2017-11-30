@@ -1,10 +1,24 @@
-# golang 官方包管理器安装与基本用法
-
-### 安装(linux下源码安装)
-
-
-```shell
-# 注意：需要golang环境
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="../css/pandoc.css" type="text/css" />
+</head>
+<body>
+<div id="TOC">
+<ul>
+<li><a href="#golang-官方包管理器安装与基本用法">golang 官方包管理器安装与基本用法</a><ul>
+<li><a href="#安装linux下源码安装">安装(linux下源码安装)</a></li>
+</ul></li>
+</ul>
+</div>
+<h1 id="golang-官方包管理器安装与基本用法">golang 官方包管理器安装与基本用法</h1>
+<h3 id="安装linux下源码安装">安装(linux下源码安装)</h3>
+<pre class="shell"><code># 注意：需要golang环境
 go get -u github.com/golang/dep/cmd/dep
 cd github.com/golang/dep/cmd/dep
 go build
@@ -13,7 +27,7 @@ go build
 
 # 建立一个demo测试环境
 
-mkdir -p demo/src/app && cd demo/src/app && export GOPATH=`pwd`
+mkdir -p demo/src/app &amp;&amp; cd demo/src/app &amp;&amp; export GOPATH=`pwd`
 
 # dep 初始化
 dep init
@@ -29,7 +43,7 @@ tree
 
 # 打开Gopkg.toml，开始编辑
 # 例如，要添加一个三方包：
-# required = ["github.com/user/thing/cmd/thing"]
+# required = [&quot;github.com/user/thing/cmd/thing&quot;]
 
 # 修改后执行下面命令进行更新，注意，此时需要建一个正常编译的go文件，我们这里建立一个main.go，内容如下：
 # package main
@@ -75,8 +89,8 @@ dep status
 # 如果我们对三方包有版本要求，比如github.com/gorilla/mux需要1.6.0以下的版本
 # 打开Gopkg.toml，添加如下内容：
 # [[constraint]]
-#   name = "github.com/gorilla/mux"
-#   version = "<1.6.0"
+#   name = &quot;github.com/gorilla/mux&quot;
+#   version = &quot;&lt;1.6.0&quot;
 # 然后执行：
 dep ensure
 
@@ -84,7 +98,7 @@ dep ensure
 dep status
 # PROJECT                     CONSTRAINT  VERSION  REVISION  LATEST   PKGS USED
 # github.com/gorilla/context  v1.1        v1.1     1ea2538   1ea2538  1  
-# github.com/gorilla/mux      <1.6.0      v1.5.0   24fca30   24fca30  1 
+# github.com/gorilla/mux      &lt;1.6.0      v1.5.0   24fca30   24fca30  1 
 
 # 最终，项目目录结构如下：
 tree
@@ -118,5 +132,6 @@ tree
 # 
 # 5 directories, 21 files
 
-# 详细文档参见：https://github.com/golang/dep/
-```
+# 详细文档参见：https://github.com/golang/dep/</code></pre>
+</body>
+</html>

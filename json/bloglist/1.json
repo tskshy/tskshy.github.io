@@ -2,6 +2,14 @@
 	"data"	:
 	[		
 		{
+			"id"	: "25",
+			"title"	: "golang 官方包管理器(dep)简单使用指南",
+			"url"	: "2017-08-03.md.html",
+			"img"	: "",
+			"intro"	: "golang 官方包管理器(dep)简单使用指南",
+			"time"	: "2017-09-07"
+		},
+		{
 			"id"	: "24",
 			"title"	: "各种工具集(github)",
 			"url"	: "",
