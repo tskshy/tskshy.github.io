@@ -6,6 +6,43 @@
   <meta name="generator" content="pandoc" />
   <title></title>
   <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
   <link rel="stylesheet" href="../css/pandoc.css" type="text/css" />
 </head>
 <body>
@@ -18,120 +55,120 @@
 </div>
 <h1 id="golang-官方包管理器安装与基本用法">golang 官方包管理器安装与基本用法</h1>
 <h3 id="安装linux下源码安装">安装(linux下源码安装)</h3>
-<pre class="shell"><code># 注意：需要golang环境
-go get -u github.com/golang/dep/cmd/dep
-cd github.com/golang/dep/cmd/dep
-go build
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># 注意：需要golang环境</span>
+<span class="ex">go</span> get -u github.com/golang/dep/cmd/dep
+<span class="bu">cd</span> github.com/golang/dep/cmd/dep
+<span class="ex">go</span> build
 
-# 然后生成dep二进制执行文件，把dep放于PATH路径下方便后续操作
+<span class="co"># 然后生成dep二进制执行文件，把dep放于PATH路径下方便后续操作</span>
 
-# 建立一个demo测试环境
+<span class="co"># 建立一个demo测试环境</span>
 
-mkdir -p demo/src/app &amp;&amp; cd demo/src/app &amp;&amp; export GOPATH=`pwd`
+<span class="fu">mkdir</span> -p demo/src/app <span class="kw">&amp;&amp;</span> <span class="bu">cd</span> demo/src/app <span class="kw">&amp;&amp;</span> <span class="bu">export</span> <span class="va">GOPATH=</span><span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span>
 
-# dep 初始化
-dep init
+<span class="co"># dep 初始化</span>
+<span class="ex">dep</span> init
 
-# 执行后生成如下文件
-tree
-# .
-# ├── Gopkg.lock # 这个不用管
-# ├── Gopkg.toml # 定制三方包规则文件
-# └── vendor # 各种三方包文件目录
-# 
-# 1 directory, 2 files
+<span class="co"># 执行后生成如下文件</span>
+<span class="ex">tree</span>
+<span class="co"># .</span>
+<span class="co"># ├── Gopkg.lock # 这个不用管</span>
+<span class="co"># ├── Gopkg.toml # 定制三方包规则文件</span>
+<span class="co"># └── vendor # 各种三方包文件目录</span>
+<span class="co"># </span>
+<span class="co"># 1 directory, 2 files</span>
 
-# 打开Gopkg.toml，开始编辑
-# 例如，要添加一个三方包：
-# required = [&quot;github.com/user/thing/cmd/thing&quot;]
+<span class="co"># 打开Gopkg.toml，开始编辑</span>
+<span class="co"># 例如，要添加一个三方包：</span>
+<span class="co"># required = [&quot;github.com/user/thing/cmd/thing&quot;]</span>
 
-# 修改后执行下面命令进行更新，注意，此时需要建一个正常编译的go文件，我们这里建立一个main.go，内容如下：
-# package main
-# func main() {}
-dep ensure
+<span class="co"># 修改后执行下面命令进行更新，注意，此时需要建一个正常编译的go文件，我们这里建立一个main.go，内容如下：</span>
+<span class="co"># package main</span>
+<span class="co"># func main() {}</span>
+<span class="ex">dep</span> ensure
 
-# 查看vendor目录，需要的包已经安装了
-tree vender
-# vendor/
-# └── github.com
-#     └── gorilla
-#         ├── context
-#         │   ├── context.go
-#         │   ├── context_test.go
-#         │   ├── doc.go
-#         │   ├── LICENSE
-#         │   └── README.md
-#         └── mux
-#             ├── bench_test.go
-#             ├── context_gorilla.go
-#             ├── context_gorilla_test.go
-#             ├── context_native.go
-#             ├── context_native_test.go
-#             ├── doc.go
-#             ├── LICENSE
-#             ├── mux.go
-#             ├── mux_test.go
-#             ├── old_test.go
-#             ├── README.md
-#             ├── regexp.go
-#             └── route.go
-# 
-# 4 directories, 18 files
+<span class="co"># 查看vendor目录，需要的包已经安装了</span>
+<span class="ex">tree</span> vender
+<span class="co"># vendor/</span>
+<span class="co"># └── github.com</span>
+<span class="co">#     └── gorilla</span>
+<span class="co">#         ├── context</span>
+<span class="co">#         │   ├── context.go</span>
+<span class="co">#         │   ├── context_test.go</span>
+<span class="co">#         │   ├── doc.go</span>
+<span class="co">#         │   ├── LICENSE</span>
+<span class="co">#         │   └── README.md</span>
+<span class="co">#         └── mux</span>
+<span class="co">#             ├── bench_test.go</span>
+<span class="co">#             ├── context_gorilla.go</span>
+<span class="co">#             ├── context_gorilla_test.go</span>
+<span class="co">#             ├── context_native.go</span>
+<span class="co">#             ├── context_native_test.go</span>
+<span class="co">#             ├── doc.go</span>
+<span class="co">#             ├── LICENSE</span>
+<span class="co">#             ├── mux.go</span>
+<span class="co">#             ├── mux_test.go</span>
+<span class="co">#             ├── old_test.go</span>
+<span class="co">#             ├── README.md</span>
+<span class="co">#             ├── regexp.go</span>
+<span class="co">#             └── route.go</span>
+<span class="co"># </span>
+<span class="co"># 4 directories, 18 files</span>
 
-# 通常，我们用下面命令查看状态
-dep status
+<span class="co"># 通常，我们用下面命令查看状态</span>
+<span class="ex">dep</span> status
 
-# 执行结果如下
-# PROJECT                     CONSTRAINT  VERSION  REVISION  LATEST   PKGS USED
-# github.com/gorilla/context  v1.1        v1.1     1ea2538   1ea2538  1  
-# github.com/gorilla/mux      v1.6.0      v1.6.0   7f08801   7f08801  1 
+<span class="co"># 执行结果如下</span>
+<span class="co"># PROJECT                     CONSTRAINT  VERSION  REVISION  LATEST   PKGS USED</span>
+<span class="co"># github.com/gorilla/context  v1.1        v1.1     1ea2538   1ea2538  1  </span>
+<span class="co"># github.com/gorilla/mux      v1.6.0      v1.6.0   7f08801   7f08801  1 </span>
 
-# 如果我们对三方包有版本要求，比如github.com/gorilla/mux需要1.6.0以下的版本
-# 打开Gopkg.toml，添加如下内容：
-# [[constraint]]
-#   name = &quot;github.com/gorilla/mux&quot;
-#   version = &quot;&lt;1.6.0&quot;
-# 然后执行：
-dep ensure
+<span class="co"># 如果我们对三方包有版本要求，比如github.com/gorilla/mux需要1.6.0以下的版本</span>
+<span class="co"># 打开Gopkg.toml，添加如下内容：</span>
+<span class="co"># [[constraint]]</span>
+<span class="co">#   name = &quot;github.com/gorilla/mux&quot;</span>
+<span class="co">#   version = &quot;&lt;1.6.0&quot;</span>
+<span class="co"># 然后执行：</span>
+<span class="ex">dep</span> ensure
 
-# 最终查看状态：
-dep status
-# PROJECT                     CONSTRAINT  VERSION  REVISION  LATEST   PKGS USED
-# github.com/gorilla/context  v1.1        v1.1     1ea2538   1ea2538  1  
-# github.com/gorilla/mux      &lt;1.6.0      v1.5.0   24fca30   24fca30  1 
+<span class="co"># 最终查看状态：</span>
+<span class="ex">dep</span> status
+<span class="co"># PROJECT                     CONSTRAINT  VERSION  REVISION  LATEST   PKGS USED</span>
+<span class="co"># github.com/gorilla/context  v1.1        v1.1     1ea2538   1ea2538  1  </span>
+<span class="co"># github.com/gorilla/mux      &lt;1.6.0      v1.5.0   24fca30   24fca30  1 </span>
 
-# 最终，项目目录结构如下：
-tree
-# .
-# ├── Gopkg.lock
-# ├── Gopkg.toml
-# ├── main.go
-# └── vendor
-#     └── github.com
-#         └── gorilla
-#             ├── context
-#             │   ├── context.go
-#             │   ├── context_test.go
-#             │   ├── doc.go
-#             │   ├── LICENSE
-#             │   └── README.md
-#             └── mux
-#                 ├── bench_test.go
-#                 ├── context_gorilla.go
-#                 ├── context_gorilla_test.go
-#                 ├── context_native.go
-#                 ├── context_native_test.go
-#                 ├── doc.go
-#                 ├── LICENSE
-#                 ├── mux.go
-#                 ├── mux_test.go
-#                 ├── old_test.go
-#                 ├── README.md
-#                 ├── regexp.go
-#                 └── route.go
-# 
-# 5 directories, 21 files
+<span class="co"># 最终，项目目录结构如下：</span>
+<span class="ex">tree</span>
+<span class="co"># .</span>
+<span class="co"># ├── Gopkg.lock</span>
+<span class="co"># ├── Gopkg.toml</span>
+<span class="co"># ├── main.go</span>
+<span class="co"># └── vendor</span>
+<span class="co">#     └── github.com</span>
+<span class="co">#         └── gorilla</span>
+<span class="co">#             ├── context</span>
+<span class="co">#             │   ├── context.go</span>
+<span class="co">#             │   ├── context_test.go</span>
+<span class="co">#             │   ├── doc.go</span>
+<span class="co">#             │   ├── LICENSE</span>
+<span class="co">#             │   └── README.md</span>
+<span class="co">#             └── mux</span>
+<span class="co">#                 ├── bench_test.go</span>
+<span class="co">#                 ├── context_gorilla.go</span>
+<span class="co">#                 ├── context_gorilla_test.go</span>
+<span class="co">#                 ├── context_native.go</span>
+<span class="co">#                 ├── context_native_test.go</span>
+<span class="co">#                 ├── doc.go</span>
+<span class="co">#                 ├── LICENSE</span>
+<span class="co">#                 ├── mux.go</span>
+<span class="co">#                 ├── mux_test.go</span>
+<span class="co">#                 ├── old_test.go</span>
+<span class="co">#                 ├── README.md</span>
+<span class="co">#                 ├── regexp.go</span>
+<span class="co">#                 └── route.go</span>
+<span class="co"># </span>
+<span class="co"># 5 directories, 21 files</span>
 
-# 详细文档参见：https://github.com/golang/dep/</code></pre>
+<span class="co"># 详细文档参见：https://github.com/golang/dep/</span></code></pre></div>
 </body>
 </html>
