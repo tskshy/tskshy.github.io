@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="../css/pandoc.css" type="text/css" />
+</head>
+<body>
+<div id="TOC">
+<ul>
+<li><a href="#阿里云短信-python3代码发送短信">阿里云短信 python3代码发送短信</a></li>
+</ul>
+</div>
+<h1 id="阿里云短信-python3代码发送短信">阿里云短信 python3代码发送短信</h1>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># -*- coding: utf-8 -*-</span>
+<span class="co"># pip install requests</span>
+<span class="im">import</span> requests
+<span class="im">import</span> urllib.request
+<span class="im">import</span> time
+<span class="im">import</span> uuid
+<span class="im">import</span> hmac
+<span class="im">import</span> base64
+<span class="im">import</span> datetime
+<span class="im">import</span> json
+
+<span class="kw">def</span> params(accesskeyid, mobiles, tpl_code, tpl_params, sign_name):
+    p <span class="op">=</span> [
+        [<span class="st">&quot;SignatureMethod&quot;</span>, <span class="st">&quot;HMAC-SHA1&quot;</span>],
+        [<span class="st">&quot;SignatureNonce&quot;</span>, uuid.uuid4().<span class="bu">hex</span>],
+        [<span class="st">&quot;AccessKeyId&quot;</span>, accesskeyid],
+        [<span class="st">&quot;SignatureVersion&quot;</span>, <span class="st">&quot;1.0&quot;</span>],
+        [<span class="st">&quot;Timestamp&quot;</span>, time_now_fmt()],
+        [<span class="st">&quot;Format&quot;</span>, <span class="st">&quot;JSON&quot;</span>],
+
+        [<span class="st">&quot;Action&quot;</span>, <span class="st">&quot;SendSms&quot;</span>],
+        [<span class="st">&quot;Version&quot;</span>, <span class="st">&quot;2017-05-25&quot;</span>],
+        [<span class="st">&quot;RegionId&quot;</span>, <span class="st">&quot;cn-hangzhou&quot;</span>],
+        [<span class="st">&quot;PhoneNumbers&quot;</span>, <span class="st">&quot;</span><span class="sc">{0}</span><span class="st">&quot;</span>.<span class="bu">format</span>(mobiles)],
+        [<span class="st">&quot;SignName&quot;</span>, sign_name],
+        [<span class="st">&quot;TemplateParam&quot;</span>, json.dumps(tpl_params, ensure_ascii<span class="op">=</span><span class="va">False</span>)],
+        [<span class="st">&quot;TemplateCode&quot;</span>, tpl_code],
+        [<span class="st">&quot;OutId&quot;</span>, <span class="st">&quot;123&quot;</span>],
+    ]
+    <span class="cf">return</span> p
+
+
+<span class="kw">def</span> time_now_fmt():
+    r <span class="op">=</span> datetime.datetime.utcfromtimestamp(time.time())
+    r <span class="op">=</span> time.strftime(<span class="st">&quot;%Y-%m-</span><span class="sc">%d</span><span class="st">T%H:%M:%SZ&quot;</span>, r.timetuple())
+    <span class="cf">return</span> r
+
+
+<span class="kw">def</span> special_url_encode(s):
+    r <span class="op">=</span> urllib.parse.quote_plus(s).replace(<span class="st">&quot;+&quot;</span>, <span class="st">&quot;%20&quot;</span>).replace(<span class="st">&quot;*&quot;</span>, <span class="st">&quot;%2A&quot;</span>).replace(<span class="st">&quot;</span><span class="sc">%7E</span><span class="st">&quot;</span>, <span class="st">&quot;~&quot;</span>)
+    <span class="cf">return</span> r
+
+
+<span class="kw">def</span> encode_params(lst):
+    s <span class="op">=</span> <span class="st">&quot;&amp;&quot;</span>.join(<span class="bu">list</span>(<span class="bu">map</span>(
+        <span class="kw">lambda</span> p: <span class="st">&quot;=&quot;</span>.join([special_url_encode(p[<span class="dv">0</span>]), special_url_encode(p[<span class="dv">1</span>])]),
+        <span class="bu">sorted</span>(lst, key<span class="op">=</span><span class="kw">lambda</span> p: p[<span class="dv">0</span>])
+    )))
+    <span class="cf">return</span> s
+
+
+<span class="kw">def</span> prepare_sign(s):
+    r <span class="op">=</span> <span class="st">&quot;&amp;&quot;</span>.join([<span class="st">&quot;GET&quot;</span>, special_url_encode(<span class="st">&quot;/&quot;</span>), special_url_encode(s)])
+    <span class="cf">return</span> r
+
+
+<span class="kw">def</span> sign(access_secret,  prepare_str):
+    k <span class="op">=</span> <span class="st">&quot;</span><span class="sc">{0}{1}</span><span class="st">&quot;</span>.<span class="bu">format</span>(access_secret, <span class="st">&quot;&amp;&quot;</span>)
+    r <span class="op">=</span> hmac.new(k.encode(), prepare_str.encode(), sha1).digest()
+    base_str <span class="op">=</span> base64.b64encode(r).decode()
+    <span class="cf">return</span> special_url_encode(base_str)
+
+
+<span class="kw">def</span> _send_sms_ali(mobiles, tpl_code, tpl_params):
+    prefix_url <span class="op">=</span> <span class="st">&quot;https://dysmsapi.aliyuncs.com/?&quot;</span>
+
+    accesskeyid <span class="op">=</span> <span class="st">&quot;xxxxx&quot;</span>
+    accesssecret <span class="op">=</span> <span class="st">&quot;xxxxx&quot;</span>
+    sign_name <span class="op">=</span> <span class="st">&quot;xxxxx&quot;</span>
+
+    params_lst <span class="op">=</span> params(accesskeyid, mobiles, tpl_code, tpl_params, sign_name)
+    eps <span class="op">=</span> encode_params(params_lst)
+    prepare_str <span class="op">=</span> prepare_sign(eps)
+    sign_str <span class="op">=</span> sign(accesssecret, prepare_str)
+
+    url <span class="op">=</span> <span class="st">&quot;</span><span class="sc">{0}</span><span class="st">Signature=</span><span class="sc">{1}</span><span class="st">&amp;</span><span class="sc">{2}</span><span class="st">&quot;</span>.<span class="bu">format</span>(prefix_url, sign_str, eps)
+
+    r <span class="op">=</span> requests.get(url)
+    <span class="cf">if</span> r.status_code <span class="op">!=</span> <span class="dv">200</span>:
+        <span class="cf">return</span> <span class="va">False</span>
+    <span class="cf">else</span>:
+        jn <span class="op">=</span> json.loads(r.text)
+        <span class="cf">if</span> jn.get(<span class="st">&quot;Code&quot;</span>) <span class="op">==</span> <span class="st">&quot;OK&quot;</span>:
+            <span class="cf">return</span> <span class="va">True</span>
+        <span class="cf">else</span>:
+            <span class="cf">return</span> <span class="va">False</span>
+
+
+<span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">&quot;__main__&quot;</span>:
+    <span class="co"># 签名校验测试，与测试样例一致，待拿到正式参数时再做测试修改</span>
+
+    _tpl_code <span class="op">=</span> <span class="st">&quot;SMS_120785003&quot;</span>
+    _tpl_params <span class="op">=</span> {<span class="st">&quot;code&quot;</span>: <span class="st">&quot;0000&quot;</span>}
+    _send_sms_ali(<span class="st">&quot;150xxxxxxxxx,177xxxxxxxx&quot;</span>, _tpl_code, _tpl_params)</code></pre></div>
+</body>
+</html>
